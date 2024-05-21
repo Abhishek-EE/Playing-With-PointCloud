@@ -9,15 +9,18 @@ The project includes functionality for detecting planes in point clouds, reorien
 * Refer to Floor Detection subsection in [Playground.ipynb](./Playground.ipynb)
 
 For plane detection I experimented with three different approaches - 
-- RANSAC (Random Sample Consensus): Iteratively selects a random subset of points, fits a model (plane), and evaluates the fit by counting inliers within a distance threshold.
+* RANSAC (Random Sample Consensus): Iteratively selects a random subset of points, fits a model (plane), and evaluates the fit by counting inliers within a distance threshold.
 <p align="center">
   <img src="images/RANSAC_shoe.png" width="90%" alt="Image 1 Caption">
 </p>
-- Convex Hull:  Computes the smallest convex polygon that can enclose all points in the point cloud.
+
+
+* Convex Hull:  Computes the smallest convex polygon that can enclose all points in the point cloud.
 <p align="center">
   <img src="images/ConvexHull_1.png" width="90%" alt="Image 1 Caption">
 </p>
-- PCA (Priniciple Component Analysis): Uses eigenvalue decomposition of the covariance matrix of the points to find the main directions of variation. The normal to the plane is given by the eigenvector corresponding to the smallest eigenvalue.
+
+* PCA (Priniciple Component Analysis): Uses eigenvalue decomposition of the covariance matrix of the points to find the main directions of variation. The normal to the plane is given by the eigenvector corresponding to the smallest eigenvalue.
 <p align="center">
   <img src="images/PCA_shoe2_pc.png" width="90%" alt="Image 1 Caption">
 </p>
@@ -37,18 +40,23 @@ Since the given data was noisy and outlier rich I reasoned that RANSAC will be t
   <span style="display:inline-block; width:30%; text-align:center;">Plane Estimation Using RANSAC</span>
 </p>
 
-As can be obtained whenever there are enough inlier points available this approach works extremely well.
+As can be observed from the above cases whenever there are enough inlier points available this approach works extremely well.
 
 However there are three specific cases where this approach fails, 
-- Insufficient Inliers: RANSAC relies on finding a sufficient number of inliers that support the proposed plane model. If the actual number of inliers (points that lie on the plane) is too low compared to the total number of points, RANSAC might fail to find the correct plane.
+* Insufficient Inliers: RANSAC relies on finding a sufficient number of inliers that support the proposed plane model. If the actual number of inliers (points that lie on the plane) is too low compared to the total number of points, RANSAC might fail to find the correct plane.
+
 <p align="center">
   <img src="images/LowInlierRANSAC.png" width="90%" alt="Image 1 Caption">
 </p>
-- Multiple Planes: If the point cloud contains multiple planes or other geometric structures, RANSAC might not be able to distinguish between them effectively. It could end up fitting a plane that is an average of several planes or fitting the wrong plane entirely.
+
+* Multiple Planes: If the point cloud contains multiple planes or other geometric structures, RANSAC might not be able to distinguish between them effectively. It could end up fitting a plane that is an average of several planes or fitting the wrong plane entirely.
+  
 <p align="center">
   <img src="images/Multiple_planes_RANSAC.png" width="90%" alt="Image 1 Caption">
 </p>
-- High Noise Levels: If the point cloud has a high level of noise, the random sampling process may frequently select noisy points, leading to incorrect plane models.
+
+* High Noise Levels: If the point cloud has a high level of noise, the random sampling process may frequently select noisy points, leading to incorrect plane models.
+  
 <p align="center">
   <img src="images/HighNOiseRANSAC.png" width="90%" alt="Image 1 Caption">
 </p>
@@ -90,11 +98,6 @@ In this project, the PointCloudSmoother class encapsulates the functionality of 
 <p align="center">
   <img src="images/pc_with_normals_smooth.png" width="50%" alt="Point Cloud with Normals Pre Smoothing">
   <img src="images/smooth_mesh.png" width="50%" alt="Point Cloud Post Smoothing">
-</p>
-
-<p align="center">
-  <span style="display:inline-block; width:50%; text-align:center;">Point Cloud with Normals Pre Smoothing</span>
-  <span style="display:inline-block; width:50%; text-align:center;">Point Cloud Post Smoothing</span>
 </p>
 
 
