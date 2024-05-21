@@ -71,91 +71,97 @@ class PlaneDetectorRANSAC(PlaneDetector):
         return True
 
 
-# class PlaneDetectorPCA(PlaneDetector):
-#     """
-#     A class for detecting a plane in a point cloud using Principal Component Analysis (PCA).
-#     """
-#     def __init__(self, point_cloud):
-#         super().__init__(point_cloud)
+class PlaneDetectorPCA(PlaneDetector):
+    """
+    A class for detecting a plane in a point cloud using Principal Component Analysis (PCA).
+    """
+    def __init__(self, point_cloud):
+        super().__init__(point_cloud)
+        self.floor_equation = None
 
-#     def detect_plane(self):
-#         """
-#         Detects a plane in the point cloud using PCA.
+    def detect_plane(self):
+        """
+        Detects a plane in the point cloud using PCA.
 
-#         Returns:
-#         - floor_equation (tuple): Coefficients of the plane equation (a, b, c, d) where ax + by + cz + d = 0.
-#         """
-#         points = np.asarray(self.point_cloud.points)
-#         centroid = np.mean(points, axis=0)
-#         points_centered = points - centroid
-#         covariance_matrix = np.dot(points_centered.T, points_centered) / len(points)
-#         eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)
-#         normal = eigenvectors[:, np.argmin(eigenvalues)]
-#         d = -np.dot(normal, centroid)
-#         normal /= np.linalg.norm(normal)
-#         floor_equation = tuple(normal.tolist() + [d])
-#         return floor_equation
+        Returns:
+        - floor_equation (tuple): Coefficients of the plane equation (a, b, c, d) where ax + by + cz + d = 0.
+        """
+        points = np.asarray(self.point_cloud.points)
+        centroid = np.mean(points, axis=0)
+        points_centered = points - centroid
+        covariance_matrix = np.dot(points_centered.T, points_centered) / len(points)
+        eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)
+        normal = eigenvectors[:, np.argmin(eigenvalues)]
+        d = -np.dot(normal, centroid)
+        normal /= np.linalg.norm(normal)
+        floor_equation = tuple(normal.tolist() + [d])
+        return floor_equation
     
-#     def reorient_plane(self):
-#         """
-#         Detects and reorients the plane in the point cloud using PCA.
+    def reorient_plane(self):
+        """
+        Detects and reorients the plane in the point cloud using RANSAC.
 
-#         Returns:
-#         - floor_equation (tuple): Coefficients of the plane equation (a, b, c, d) where ax + by + cz + d = 0.
-#         """
-#         floor_equation = self.detect_plane()
-#         transformation_matrix = calculate_reorientation_matrix(floor_equation)
-#         self.point_cloud.transform(transformation_matrix)
-#         return floor_equation
+        Returns:
+        - bool : True if the orientation is succesful, False otherwise
+        """
+        if self.floor_equation is None:
+            print("Floor Equation not calculated yet")
+            return False
+        transformation_matrix = calculate_reorientation_matrix(self.floor_equation)
+        self.point_cloud.transform(transformation_matrix)
+        return True
 
 
-# class PlaneDetectorConvexHull(PlaneDetector):
-#     """
-#     A class for detecting a plane in a point cloud using Convex Hull method.
-#     """
-#     def __init__(self, point_cloud):
-#         super().__init__(point_cloud)
+class PlaneDetectorConvexHull(PlaneDetector):
+    """
+    A class for detecting a plane in a point cloud using Convex Hull method.
+    """
+    def __init__(self, point_cloud):
+        super().__init__(point_cloud)
+        self.floor_equation = None
 
-#     def detect_plane(self):
-#         """
-#         Detects a plane in the point cloud using Convex Hull method.
+    def detect_plane(self):
+        """
+        Detects a plane in the point cloud using Convex Hull method.
 
-#         Returns:
-#         - floor_equation (tuple): Coefficients of the plane equation (a, b, c, d) where ax + by + cz + d = 0.
-#         """
-#         hull, _ = self.point_cloud.compute_convex_hull()
-#         plane_points = np.asarray(hull.vertices)
-#         floor_equation = self.fit_plane(plane_points)
-#         return floor_equation
+        Returns:
+        - floor_equation (tuple): Coefficients of the plane equation (a, b, c, d) where ax + by + cz + d = 0.
+        """
+        hull, _ = self.point_cloud.compute_convex_hull()
+        plane_points = np.asarray(hull.vertices)
+        floor_equation = self.fit_plane(plane_points)
+        return floor_equation
     
-#     def reorient_plane(self):
-#         """
-#         Detects and reorients the plane in the point cloud using Convex Hull method.
+    def reorient_plane(self):
+        """
+        Detects and reorients the plane in the point cloud using RANSAC.
 
-#         Returns:
-#         - floor_equation (tuple): Coefficients of the plane equation (a, b, c, d) where ax + by + cz + d = 0.
-#         """
-#         floor_equation = self.detect_plane()
-#         transformation_matrix = calculate_reorientation_matrix(floor_equation)
-#         self.point_cloud.transform(transformation_matrix)
-#         return floor_equation
+        Returns:
+        - bool : True if the orientation is succesful, False otherwise
+        """
+        if self.floor_equation is None:
+            print("Floor Equation not calculated yet")
+            return False
+        transformation_matrix = calculate_reorientation_matrix(self.floor_equation)
+        self.point_cloud.transform(transformation_matrix)
+        return True
 
 
-#     def fit_plane(self, points):
-#         """
-#         Fits a plane to a set of points using least squares method.
+    def fit_plane(self, points):
+        """
+        Fits a plane to a set of points using least squares method.
 
-#         Parameters:
-#         - points (numpy.ndarray): Points on the plane.
+        Parameters:
+        - points (numpy.ndarray): Points on the plane.
 
-#         Returns:
-#         - plane_equation (tuple): Coefficients of the plane equation (a, b, c, d) where ax + by + cz + d = 0.
-#         """
-#         centroid = np.mean(points, axis=0)
-#         covariance_matrix = np.cov(points, rowvar=False)
-#         eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)
-#         normal = eigenvectors[np.argmin(eigenvalues)]
-#         d = -np.dot(normal, centroid)
-#         normal /= np.linalg.norm(normal)
-#         plane_equation = tuple(normal.tolist() + [d])
-#         return plane_equation
+        Returns:
+        - plane_equation (tuple): Coefficients of the plane equation (a, b, c, d) where ax + by + cz + d = 0.
+        """
+        centroid = np.mean(points, axis=0)
+        covariance_matrix = np.cov(points, rowvar=False)
+        eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)
+        normal = eigenvectors[np.argmin(eigenvalues)]
+        d = -np.dot(normal, centroid)
+        normal /= np.linalg.norm(normal)
+        plane_equation = tuple(normal.tolist() + [d])
+        return plane_equation
